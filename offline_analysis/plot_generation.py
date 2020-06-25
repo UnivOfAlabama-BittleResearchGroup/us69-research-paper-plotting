@@ -17,17 +17,15 @@ summary_df = pd.read_csv(os.path.join(DATA_DIR_FULL_PATH, RAW_DATA_SUMMARY), hea
 
 #%% Convert the Raw Seconds to Pandas Datetime. This takes a long time. Run once than save the .csv
 
-
 if raw_data_df['timestep_time'].dtype.name != 'datetime64[ns]':
 
+    """ These don't work on Windows """
+    #print("Calling mp apply")
+    # raw_data_df.loc[:, 'timestep_time'] = mp_funcs.apply_by_multiprocessing(raw_data_df['timestep_time'], func)
+    # raw_data_df.loc[:, 'timestep_time'] = pd.to_datetime(raw_data_df.loc[:, 'timestep_time'])
+    raw_data_df['timestep_time'] = raw_data_df['timestep_time'].apply(func=func)
 
     print("Calling mp apply")
-    raw_data_df.loc[:, 'timestep_time'] = mp_funcs.apply_by_multiprocessing(raw_data_df['timestep_time'], func, axis=1)
-
-    # raw_data_df['timestep_time'] = raw_data_df['timestep_time'].apply(
-    #     lambda x: strptime(start_time, '%m/%d/%Y %H:%M:%S.%f'  # '%H:%M:%S'
-    #                        ) + timedelta(seconds=x))
-
     raw_data_df.to_csv(os.path.join(DATA_DIR_FULL_PATH, RAW_DATA_FILE))
 
 
