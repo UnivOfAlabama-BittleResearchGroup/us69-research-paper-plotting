@@ -5,6 +5,7 @@ import plotly.figure_factory as ff
 from index import APP_PATH
 import numpy as np
 import math
+import plotly_template as pt
 
 data_dir = os.path.join(APP_PATH, 'data', 'sample_analysis')
 
@@ -67,5 +68,25 @@ def plot_pdf(sample_percent1, sample_percent2, plot_var, plot_var2):
     )
 
     fig.update_layout(yaxis=dict(title="Probability Density", exponentformat='E'))
+
+    return fig
+
+
+def simple_pdf(pd_series, labels=None):
+
+    if not isinstance(pd_series, list):
+        plot_vals = list(pd_series.values)
+    if not (isinstance(labels, list)):
+        labels = [labels]
+
+    bin_size = round((max(pd_series) - min(pd_series)) / 25, 3)
+
+    fig = ff.create_distplot([plot_vals], labels, bin_size=bin_size,
+                             curve_type='normal',
+                             histnorm='probability density',  # override default 'kde'
+                             colors=[pt.pdf_colors[0]])
+
+    fig.update_layout(yaxis=dict(title="Probability Density", exponentformat='E'),
+                      template=pt.template)
 
     return fig

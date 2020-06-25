@@ -38,6 +38,7 @@ def get_all_data(sample_percent):
 
 
 def plot_pdf(sample_percent1, plot_var, plot_var2):
+
     df1 = get_all_data(sample_percent1)
     df2 = pd.read_csv(os.path.join(one_hundo_dir, '100', 'data_summary.csv'), header=[0, 1], index_col=0)
 

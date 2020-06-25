@@ -15,10 +15,10 @@ summary_df = pd.read_csv(os.path.join(APP_PATH, 'data', 'data_summary.csv'), hea
 summary_df.set_index(summary_df.iloc[:, 0], inplace=True)
 trace_visualisation.sampled_emissions_df = pd.read_csv(os.path.join(APP_PATH, 'data', 'data.csv'))
 
-sampled_vehicle_ids=trace_visualisation.sampled_emissions_df['vehicle_id'].unique()
-best_fit_vehicle='480_8.2'
-trace_visual=trace_visualisation.trace_visual
-summary_df=summary_df
+sampled_vehicle_ids = trace_visualisation.sampled_emissions_df['vehicle_id'].unique()
+best_fit_vehicle = '480_8.2'
+trace_visual = trace_visualisation.trace_visual
+summary_df = summary_df
 drop_down_options = ['Best Fit'] + list(sampled_vehicle_ids)
 
 display_data_table = pd.DataFrame(index=[0, 1], columns=['Vehicle ID', 'Distance (miles)', 'Time in Network',

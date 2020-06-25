@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly_template as pt
 
 mapbox_key = "pk.eyJ1IjoibWF4LXNjaHJhZGVyIiwiYSI6ImNrOHQxZ2s3bDAwdXQzbG81NjZpZm96bDEifQ.etUi4OK4ozzaP_P8foZn_A"
 
@@ -8,9 +9,7 @@ sampled_emissions_df = None
 
 def trace_visual(vehicle_id):
 
-    font_dict = dict(color="black",
-                     family="Courier New, monospace",
-                     size=16)
+    font_dict = pt.font_dict
 
     animation_step_duration = 500  # ms
     animation_step_size = 4  # animate two simulation steps in every animation
@@ -185,5 +184,36 @@ def trace_visual(vehicle_id):
                           pitch=0,
                           zoom=14.1,
                       ),
+                      template=pt.template
                       )
     return fig
+
+def trace_no_map(vehicle_id, plot_columns):
+
+    fig = go.Figure()
+
+    local_df = sampled_emissions_df.loc[sampled_emissions_df['vehicle_id'] == vehicle_id]
+
+    fig.add_trace(
+        go.Scatter(x=local_df['timestep_time'],
+                   y=local_df['vehicle_speed'],
+                   name='Speed',
+                   mode='lines'),
+        secondary_y=False,
+        row=1,
+        col=1,
+    )
+
+    for column in plot_columns:
+
+        fig.add_trace(
+            go.Scatter(x=local_df['timestep_time'],
+                       y=local_df['columns'],
+                       name='Speed',
+                       mode='lines'),
+            secondary_y=False,
+            row=1,
+            col=1,
+        )
+
+
