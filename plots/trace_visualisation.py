@@ -7,6 +7,7 @@ sampled_emissions_df = None
 
 
 def trace_visual(vehicle_id):
+
     font_dict = dict(color="black",
                      family="Courier New, monospace",
                      size=16)
