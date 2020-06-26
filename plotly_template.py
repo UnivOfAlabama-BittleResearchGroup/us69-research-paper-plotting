@@ -2,7 +2,7 @@ import plotly.io as pio
 pio.renderers.default = "browser"
 #print(pio.templates)
 
-template = "plotly_white"
+template = 'presentation'
 
 colors = ['magenta', 'slategray']
 

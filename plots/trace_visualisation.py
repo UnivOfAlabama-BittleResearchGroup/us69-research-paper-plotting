@@ -160,7 +160,7 @@ def trace_visual(vehicle_id):
                                            "mode": "immediate",
                                            "transition": {"duration": animation_step_duration}}
                              ],
-                    "label": local_df['timestep_time'].iloc[int(f['name'])],
+                    "label": str(local_df['timestep_time'].iloc[int(f['name'])]),
                     "method": "animate",
                 }
                 for f in frames
@@ -208,7 +208,7 @@ def trace_no_map(vehicle_id, plot_columns):
 
         fig.add_trace(
             go.Scatter(x=local_df['timestep_time'],
-                       y=local_df['columns'],
+                       y=local_df[column],
                        name='Speed',
                        mode='lines'),
             secondary_y=False,
@@ -216,4 +216,5 @@ def trace_no_map(vehicle_id, plot_columns):
             col=1,
         )
 
+    fig.update_layout(template=pt.template)
 

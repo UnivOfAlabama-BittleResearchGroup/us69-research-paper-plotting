@@ -20,3 +20,21 @@ def apply_by_multiprocessing(df, func, **kwargs):
     mgr.shutdown()
     result = sorted(result, key=lambda x: x[0])
     return pd.concat([i[1] for i in result])
+
+
+def _general_func(args):
+    func, indexes, num, df, kwargs = args
+    return num, func(indexes, df,**kwargs)
+
+
+def shared_df_mp_func(iterable, func, shared_df, **kwargs):
+    mgr = multiprocessing.Manager()
+    ns = mgr.Namespace()
+    ns.df = shared_df
+    pool = multiprocessing.Pool(processes=len(iterable))
+    result = pool.map(_general_func, [(func, ind, i, ns.df, kwargs) for i, ind in enumerate(iterable=iterable)])
+    pool.close()
+    mgr.shutdown()
+    result = sorted(result, key=lambda x: x[0])
+    return result
+
