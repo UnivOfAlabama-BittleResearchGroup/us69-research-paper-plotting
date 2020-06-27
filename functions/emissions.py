@@ -48,12 +48,20 @@ def bin_2D_sum(emissions_df, bin_column, resample_period, bin_size, start_time=N
     master_A_sum = mp_funcs.shared_df_mp_func(time_range, _2d_bin, computation_df,
                                               bin_column=bin_column, x_bins=x_bins, y_bins=y_bins)
 
+    x_bins_lon, y_bins_lat = convert_bins_2_lat_lon(bin_size)
+
     output_dict = {}
     for i, item in enumerate(master_A_sum):
         for j, inner_item in enumerate(item[1][0]):
             output_dict[time_range[i][j]] = {}
+            # inner_item = np.transpose(np.nonzero(inner_item)) This is not used for this step
+            output_dict[time_range[i][j]]["lat"] = [y_bins_lat[coord[0]] for coord in
+                                                    np.transpose(np.nonzero(inner_item))]
+            output_dict[time_range[i][j]]["lon"] = [x_bins_lon[coord[1]] for coord in
+                                                    np.transpose(np.nonzero(inner_item))]
+            inner_item = inner_item[inner_item != 0].flatten()
             output_dict[time_range[i][j]]["data"] = inner_item
-        output_dict[time_range[i][j]]["max_value"] = item[1][1]
+            output_dict[time_range[i][j]]["max_value"] = item[1][1]
     del master_A_sum
     gc.collect()
 
@@ -92,4 +100,4 @@ if __name__ == '__main__':
     df['timestep_time'] = pd.to_datetime(df['timestep_time'])
 
     # Increase the processor number the smaller the resample period is
-    bin_2D_sum(emissions_df=df, bin_column=['vehicle_fuel'], resample_period='5T', bin_size=5, processor_num=None)
+    bin_2D_sum(emissions_df=df, bin_column=['vehicle_fuel'], resample_period='5T', bin_size=5, )

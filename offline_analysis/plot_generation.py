@@ -112,5 +112,6 @@ time_range = pd.to_datetime('2020-02-13T10:00:00')
 
 x_bins_lon, y_bins_lat = emissions.convert_bins_2_lat_lon(5)
 
-emissions_heatmap.single_time_interval(binned_emissions_dict, time_range=time_range,
-                                       lat_edges=y_bins_lat[:-2], lon_edges=x_bins_lon[:-2]).show()
+fig = emissions_heatmap.single_time_interval(binned_emissions_dict, time_range=time_range,)
+fig.show()
+fig.write_image("fig1.svg")
