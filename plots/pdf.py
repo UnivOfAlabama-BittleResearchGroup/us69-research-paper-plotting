@@ -78,7 +78,7 @@ def simple_pdf(pd_series, labels=None, xaxis_label=None):
         plot_vals = [list(pd_series.values)]
         bin_size = round((max(plot_vals[0]) - min(plot_vals[0])) / 50, 3)
     else:
-        plot_vals = [[list(vals.values) for vals in pd_series]]
+        plot_vals = [[list(vals) for vals in pd_series]]
         bin_size = round((max(plot_vals[0][0]) - min(plot_vals[0][0])) / 50, 3)
 
     if not (isinstance(labels, list)):
