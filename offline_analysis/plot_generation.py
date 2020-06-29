@@ -120,18 +120,18 @@ interval_distribution = pickle.load(open(os.path.join(definitions.DATA_DIR, 'int
 #%%
 dist_list = [list(item[1]) for item in interval_distribution]
 
-max_length = 0
-for item in dist_list:
-    length = len(item)
-    if length > max_length:
-        max_length = length
+# max_length = 0
+# for item in dist_list:
+#     length = len(item)
+#     if length > max_length:
+#         max_length = length
+#
+# for i, item in enumerate(dist_list):
+#     length = len(item)
+#     if length < max_length:
+#         dist_list[i] = item + [''] * (max_length - length)
 
-for item in dist_list:
-    length = len(item)
-    if length < max_length:
-        item = item + [''] * (max_length - length)
-
-label_list = [str(item[0][0]) + ' - ' +str(item[0][1]) for item in interval_distribution]
+label_list = [str(item[0][0]) + ' - ' + str(item[0][1]) for item in interval_distribution]
 pdf.simple_pdf(pd_series=dist_list, labels=label_list).show()
 
 #%%
