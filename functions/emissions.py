@@ -90,14 +90,58 @@ def _2d_bin(time_range, df, bin_column, x_bins, y_bins):
 
     return result_dict, max
 
+
+def get_time_based_emissions_distribution(emissions_df, summary_df, bin_column,
+                                          interval, start_time=None, end_time=None, processor_num=1):
+    if isinstance(interval, str):
+        start_time = emissions_df['timestep_time'].iloc[0] if start_time is None else start_time
+        end_time = emissions_df['timestep_time'].iloc[-1] if end_time is None else end_time
+        time_range = pd.date_range(start=start_time, end=end_time, freq=interval)
+        time_range = np.array_split(time_range, processor_num)
+    else:
+        time_range = [pd.to_datetime(time_list) for time_list in interval]
+
+    computation_df = emissions_df[['timestep_time', 'vehicle_id']].copy()
+    plot_data = _set_time_based_emissions_distribution(time_range, computation_df, bin_column, summary_df)
+    pickle.dump(plot_data, open(os.path.join(definitions.DATA_DIR, 'interval_distribution.pkl'), 'wb'))
+
+
+def _set_time_based_emissions_distribution(time_range, df, bin_column, summary_df):
+
+    plot_list = []
+    if isinstance(time_range, list):
+        for i, time in enumerate(time_range):
+            plot_list.append(["", ""])
+            mask = (df['timestep_time'] >= time[0]) & (df['timestep_time'] < time[1])
+            local_df = df[mask]
+            unique_values = local_df['vehicle_id'].unique()
+            plot_list[i][0] = time
+            plot_list[i][1] = summary_df.loc[summary_df.index.isin(unique_values), bin_column]
+        return plot_list
+    else:
+        x = 0  # need to do more advanced calculation in the case that pd.datetimeindex and smaller intervals
+
+
 if __name__ == '__main__':
+
+    heatmap_desired = False
+    emission_distribution_desired = True
 
     DATA_FOLDER = '2020-06-24_09_03_03-Full-Analysis'
     DATA_DIR_FULL_PATH = os.path.join(definitions.DATA_DIR, DATA_FOLDER)
     RAW_DATA_FILE = 'data.csv'
+    SUMMARY_DATA_FILE = 'data_summary.csv'
+
+    time_interval = [['2020-02-13 06:00:00', '2020-02-13 09:00:00'], ['2020-02-13 11:00:00', '2020-02-13 14:00:00'],
+                     ['2020-02-13 16:00:00', '2020-02-13 19:00:00']]
 
     df = pd.read_csv(os.path.join(DATA_DIR_FULL_PATH, RAW_DATA_FILE), low_memory=False, index_col=0)
     df['timestep_time'] = pd.to_datetime(df['timestep_time'])
+    if heatmap_desired:
+        # Increase the processor number the smaller the resample period is
+        bin_2D_sum(emissions_df=df, bin_column=['vehicle_fuel'], resample_period='5T', bin_size=5, )
 
-    # Increase the processor number the smaller the resample period is
-    bin_2D_sum(emissions_df=df, bin_column=['vehicle_fuel'], resample_period='5T', bin_size=5, )
+    if emission_distribution_desired:
+        summary_df = pd.read_csv(os.path.join(DATA_DIR_FULL_PATH, SUMMARY_DATA_FILE), header=[0, 1], index_col=0)
+        get_time_based_emissions_distribution(emissions_df=df, summary_df=summary_df, interval=time_interval,
+                                              bin_column=('vehicle_fuel', 'mpg'))

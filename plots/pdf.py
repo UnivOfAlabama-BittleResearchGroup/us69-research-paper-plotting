@@ -75,16 +75,19 @@ def plot_pdf(sample_percent1, sample_percent2, plot_var, plot_var2):
 def simple_pdf(pd_series, labels=None, xaxis_label=None):
 
     if not isinstance(pd_series, list):
-        plot_vals = list(pd_series.values)
+        plot_vals = [list(pd_series.values)]
+        bin_size = round((max(plot_vals[0]) - min(plot_vals[0])) / 50, 3)
+    else:
+        plot_vals = [[list(vals.values) for vals in pd_series]]
+        bin_size = round((max(plot_vals[0][0]) - min(plot_vals[0][0])) / 50, 3)
+
     if not (isinstance(labels, list)):
         labels = [labels]
 
-    bin_size = round((max(pd_series) - min(pd_series)) / 50, 3)
-
-    fig = ff.create_distplot([plot_vals], labels, bin_size=bin_size,
+    fig = ff.create_distplot(plot_vals, labels, bin_size=bin_size,
                              curve_type='normal',
                              histnorm='probability density',  # override default 'kde'
-                             colors=[pt.pdf_colors[0]])
+                             colors=pt.pdf_colors[:len(labels)])
 
     fig.update_layout(yaxis=dict(title="Probability Density", exponentformat='E'),
                       xaxis=dict(title=xaxis_label),

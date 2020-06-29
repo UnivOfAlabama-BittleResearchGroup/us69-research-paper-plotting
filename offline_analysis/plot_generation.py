@@ -111,7 +111,34 @@ from functions import emissions
 time_range = pd.to_datetime('2020-02-13T10:00:00')
 
 x_bins_lon, y_bins_lat = emissions.convert_bins_2_lat_lon(5)
-
 fig = emissions_heatmap.single_time_interval(binned_emissions_dict, time_range=time_range,)
 fig.show()
-fig.write_image("fig1.svg")
+
+#fig.write_image("fig1.svg")
+#%% Load the MPG Distributions
+interval_distribution = pickle.load(open(os.path.join(definitions.DATA_DIR, 'interval_distribution.pkl'), 'rb'))
+#%%
+dist_list = [list(item[1]) for item in interval_distribution]
+
+max_length = 0
+for item in dist_list:
+    length = len(item)
+    if length > max_length:
+        max_length = length
+
+for item in dist_list:
+    length = len(item)
+    if length < max_length:
+        item = item + [''] * (max_length - length)
+
+label_list = [str(item[0][0]) + ' - ' +str(item[0][1]) for item in interval_distribution]
+pdf.simple_pdf(pd_series=dist_list, labels=label_list).show()
+
+#%%
+import plotly.express as px
+import plotly.graph_objects as go
+
+go.Figure(data=[go.Histogram(x=dist_list[2], histnorm='probability')]).show()
+
+
+# px.histogram(df, x="total_bill", histnorm='probability density')
