@@ -1,10 +1,16 @@
 import plotly.io as pio
+
 pio.renderers.default = "browser"
-#print(pio.templates)
+# print(pio.templates)
 
-template = 'presentation'
+template = 'ggplot2'
 
-colors = ['magenta', 'slategray', 'blue', 'green']
+# ['ggplot2', 'seaborn', 'simple_white', 'plotly',
+# 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
+# 'ygridoff', 'gridon', 'none']
+
+
+colors = ['darkorange', 'slategray', 'darkslateblue', 'darkturquoise']
 
 font_dict = dict(color="black",
                  family="Courier New, monospace",

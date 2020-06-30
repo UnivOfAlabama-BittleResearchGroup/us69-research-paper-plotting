@@ -6,4 +6,4 @@ venv
 data/
 .idea/
 
-.i
+*.ipynb_*

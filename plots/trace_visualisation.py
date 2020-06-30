@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly_template as pt
+import math
 
 mapbox_key = "pk.eyJ1IjoibWF4LXNjaHJhZGVyIiwiYSI6ImNrOHQxZ2s3bDAwdXQzbG81NjZpZm96bDEifQ.etUi4OK4ozzaP_P8foZn_A"
 
@@ -189,14 +190,17 @@ def trace_visual(vehicle_id):
     return fig
 
 
-def trace_no_map(vehicle_id, plot_columns):
+def trace_no_map(vehicle_id, plot_columns, axis_names):
 
     OFFSET = 0.075
     POSITION_START = 1 - len(plot_columns) * OFFSET
+    TICK_NUM = 5
 
     fig = go.Figure()
 
-    local_df = sampled_emissions_df.loc[sampled_emissions_df['vehicle_id'] == sampled_emissions_df]
+    mask = sampled_emissions_df['vehicle_id'] == vehicle_id
+    local_df = sampled_emissions_df[mask]
+
 
     fig.add_trace(
         go.Scatter(x=local_df['timestep_time'],
@@ -205,8 +209,44 @@ def trace_no_map(vehicle_id, plot_columns):
                    mode='lines'),
     )
 
+    axis_class_list = []
+    max_tick_ratio = 0
+    for i, column in enumerate(['vehicle_speed'] + plot_columns):
+        tick_calculation = CalculateTicks(local_df[column], TICK_NUM)
+        axis_class_list.append(tick_calculation)
+        max_tick_ratio = tick_calculation.y_dtick_ratio if tick_calculation.y_dtick_ratio > max_tick_ratio \
+            else max_tick_ratio
+
+    any_negative = False
+    for i, tick_calculation in enumerate(axis_class_list):
+        if tick_calculation.y_min < 0:
+            any_negative = True
+            axis_class_list[i].negative = True
+            axis_class_list[i].y_negative_ratio = abs(tick_calculation.y_min / tick_calculation.y_range) * max_tick_ratio
+        else:
+            axis_class_list[i].y_negative_ratio = 0
+        axis_class_list[i].y_positive_ratio = (tick_calculation.y_max / tick_calculation.y_range) * max_tick_ratio
+
+    global_negative_ratio = 0
+    global_positive_ratio = 0
+    for i, tick_calculation in enumerate(axis_class_list):
+        global_negative_ratio = tick_calculation.y_negative_ratio if tick_calculation.y_negative_ratio \
+                                                                     > global_negative_ratio else global_negative_ratio
+        global_positive_ratio = tick_calculation.y_positive_ratio if tick_calculation.y_positive_ratio \
+                                                                     > global_positive_ratio else global_positive_ratio
+
+    global_negative_ratio = global_negative_ratio + 0.1
+    for i, tick_calculation in enumerate(axis_class_list):
+        if any_negative:
+            axis_class_list[i].y_range_min = global_negative_ratio * tick_calculation.y_dtick * -1
+        else:
+            axis_class_list[i].y_range_min = 0
+        axis_class_list[i].y_range_max = global_positive_ratio * tick_calculation.y_dtick
+
     yaxis_dict = dict(yaxis=dict(
-        title="Vehicle Speed [mph]",
+        title=axis_names[0],
+        range=[axis_class_list[0].y_range_min, axis_class_list[0].y_range_max],
+        dtick=axis_class_list[0].y_dtick,
         # titlefont=dict(
         #     color=pt.colors[0]
         # ),
@@ -215,6 +255,7 @@ def trace_no_map(vehicle_id, plot_columns):
         # )
     )
     )
+
 
     for i, column in enumerate(plot_columns):
 
@@ -227,7 +268,10 @@ def trace_no_map(vehicle_id, plot_columns):
                        yaxis='y' + str(i + 2)),
         )
 
-        yaxis_dict['yaxis' + str(i + 2)] = dict(title=column,
+        yaxis_dict['yaxis' + str(i + 2)] = dict(title=axis_names[i+1],
+                                                range=[axis_class_list[i+1].y_range_min,
+                                                       axis_class_list[i+1].y_range_max],
+                                                dtick=axis_class_list[i+1].y_dtick,
                                                 titlefont=dict(
                                                     color=pt.colors[i]
                                                 ),
@@ -243,47 +287,35 @@ def trace_no_map(vehicle_id, plot_columns):
 
     fig.update_layout(xaxis=dict(domain=[0, POSITION_START]),
                       template=pt.template,
+                      showlegend=False,
                       #margin=dict(l=20, r=20, t=20, b=20),
                       )
 
-    # fig.update_yaxes(automargin=True)
-
-    # fig.update_layout(
-    #     yaxis=dict(
-    #         title="yaxis title",
-    #         titlefont=dict(
-    #             color="#1f77b4"
-    #         ),
-    #         tickfont=dict(
-    #             color="#1f77b4"
-    #         )
-    #     ),
-    #     yaxis2=dict(
-    #         title="yaxis2 title",
-    #         titlefont=dict(
-    #             color="#ff7f0e"
-    #         ),
-    #         tickfont=dict(
-    #             color="#ff7f0e"
-    #         ),
-    #         anchor="free",
-    #         overlaying="y",
-    #         side="left",
-    #         position=0.15
-    #     ),
-    #     yaxis4=dict(
-    #         title="yaxis4 title",
-    #         titlefont=dict(
-    #             color="#9467bd"
-    #         ),
-    #         tickfont=dict(
-    #             color="#9467bd"
-    #         ),
-    #         anchor="free",
-    #         overlaying="y",
-    #         side="right",
-    #         position=0.85
-    #     )
-    # )
-
     return fig
+
+
+class CalculateTicks:
+
+    def __init__(self, data, tick_num):
+
+        self.negative = False
+        self.y_negative_ratio = None
+        self.y_positive_ratio = None
+        self.y_range_min = None
+        self.y_range_max = None
+
+        self.y_min = min(data)
+        self.y_max = max(data)
+
+        self.y_range = self.y_max - self.y_min if self.y_min <0 else self.y_max
+        self.y_range = self.y_range * 1000
+        self.y_length = len(str(math.floor(self.y_range)))
+
+        self.y_pw10_div = 10 ** (self.y_length - 1)
+        self.y_first_digit = math.floor(self.y_range / self.y_pw10_div)
+        self.y_max_base = self.y_pw10_div * self.y_first_digit / 1000
+
+        self.y_dtick = self.y_max_base / tick_num
+        self.y_dtick_ratio = self.y_range / self.y_dtick
+
+

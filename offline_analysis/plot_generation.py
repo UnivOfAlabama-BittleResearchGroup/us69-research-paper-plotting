@@ -2,8 +2,6 @@ from plots import trace_visualisation, pdf, line_plots
 import pandas as pd
 import definitions
 import os
-import datetime
-from functions import mp_funcs
 from functions import func
 import pickle
 
@@ -72,7 +70,9 @@ plot_vehicle = '60240_189'
 
 trace_visualisation.sampled_emissions_df = raw_data_df
 trace_visualisation.trace_visual(plot_vehicle).show()
-trace_visualisation.trace_no_map(plot_vehicle, plot_columns=['vehicle_fuel', 'vehicle_CO2', 'vehicle_NOx']).show()
+trace_visualisation.trace_no_map(plot_vehicle, plot_columns=['vehicle_fuel', 'vehicle_CO2', 'vehicle_NOx'],
+                                 axis_names=["Vehicle Speed [mph]", 'Vehicle Fuel [gal/s]', 'Vehicle CO_2 [g/s]',
+                                             'Vehicle NOx [g/s]']).show()
 # %% Plot Function
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
