@@ -1,6 +1,6 @@
 import plotly.io as pio
 
-pio.renderers.default = "browser"
+# pio.renderers.default = "browser"
 # print(pio.templates)
 
 template = 'ggplot2'
