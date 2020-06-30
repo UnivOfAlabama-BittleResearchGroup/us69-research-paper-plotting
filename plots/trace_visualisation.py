@@ -188,33 +188,102 @@ def trace_visual(vehicle_id):
                       )
     return fig
 
+
 def trace_no_map(vehicle_id, plot_columns):
+
+    OFFSET = 0.075
+    POSITION_START = 1 - len(plot_columns) * OFFSET
 
     fig = go.Figure()
 
-    local_df = sampled_emissions_df.loc[sampled_emissions_df['vehicle_id'] == vehicle_id]
+    local_df = sampled_emissions_df.loc[sampled_emissions_df['vehicle_id'] == sampled_emissions_df]
 
     fig.add_trace(
         go.Scatter(x=local_df['timestep_time'],
                    y=local_df['vehicle_speed'],
                    name='Speed',
                    mode='lines'),
-        secondary_y=False,
-        row=1,
-        col=1,
     )
 
-    for column in plot_columns:
+    yaxis_dict = dict(yaxis=dict(
+        title="Vehicle Speed [mph]",
+        # titlefont=dict(
+        #     color=pt.colors[0]
+        # ),
+        # tickfont=dict(
+        #     color=pt.colors[0]
+        # )
+    )
+    )
+
+    for i, column in enumerate(plot_columns):
 
         fig.add_trace(
             go.Scatter(x=local_df['timestep_time'],
                        y=local_df[column],
-                       name='Speed',
-                       mode='lines'),
-            secondary_y=False,
-            row=1,
-            col=1,
+                       name=column,
+                       mode='lines',
+                       line=dict(color=pt.colors[i]),
+                       yaxis='y' + str(i + 2)),
         )
 
-    fig.update_layout(template=pt.template)
+        yaxis_dict['yaxis' + str(i + 2)] = dict(title=column,
+                                                titlefont=dict(
+                                                    color=pt.colors[i]
+                                                ),
+                                                tickfont=dict(
+                                                    color=pt.colors[i]
+                                                ),
+                                                anchor="free" if i > 0 else 'x',
+                                                overlaying="y",
+                                                side="right",
+                                                position=POSITION_START + OFFSET * i)
 
+    fig.update_layout(yaxis_dict)
+
+    fig.update_layout(xaxis=dict(domain=[0, POSITION_START]),
+                      template=pt.template,
+                      #margin=dict(l=20, r=20, t=20, b=20),
+                      )
+
+    # fig.update_yaxes(automargin=True)
+
+    # fig.update_layout(
+    #     yaxis=dict(
+    #         title="yaxis title",
+    #         titlefont=dict(
+    #             color="#1f77b4"
+    #         ),
+    #         tickfont=dict(
+    #             color="#1f77b4"
+    #         )
+    #     ),
+    #     yaxis2=dict(
+    #         title="yaxis2 title",
+    #         titlefont=dict(
+    #             color="#ff7f0e"
+    #         ),
+    #         tickfont=dict(
+    #             color="#ff7f0e"
+    #         ),
+    #         anchor="free",
+    #         overlaying="y",
+    #         side="left",
+    #         position=0.15
+    #     ),
+    #     yaxis4=dict(
+    #         title="yaxis4 title",
+    #         titlefont=dict(
+    #             color="#9467bd"
+    #         ),
+    #         tickfont=dict(
+    #             color="#9467bd"
+    #         ),
+    #         anchor="free",
+    #         overlaying="y",
+    #         side="right",
+    #         position=0.85
+    #     )
+    # )
+
+    return fig

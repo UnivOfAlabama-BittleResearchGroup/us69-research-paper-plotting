@@ -92,7 +92,8 @@ def _2d_bin(time_range, df, bin_column, x_bins, y_bins):
 
 
 def get_time_based_emissions_distribution(emissions_df, summary_df, bin_column,
-                                          interval, start_time=None, end_time=None, processor_num=1):
+                                          interval, start_time=None, end_time=None, processor_num=1,
+                                          return_data=False):
     if isinstance(interval, str):
         start_time = emissions_df['timestep_time'].iloc[0] if start_time is None else start_time
         end_time = emissions_df['timestep_time'].iloc[-1] if end_time is None else end_time
@@ -103,6 +104,8 @@ def get_time_based_emissions_distribution(emissions_df, summary_df, bin_column,
 
     computation_df = emissions_df[['timestep_time', 'vehicle_id']].copy()
     plot_data = _set_time_based_emissions_distribution(time_range, computation_df, bin_column, summary_df)
+    if return_data:
+        return plot_data
     pickle.dump(plot_data, open(os.path.join(definitions.DATA_DIR, 'interval_distribution.pkl'), 'wb'))
 
 

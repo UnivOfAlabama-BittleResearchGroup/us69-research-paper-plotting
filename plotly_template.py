@@ -4,7 +4,7 @@ pio.renderers.default = "browser"
 
 template = 'presentation'
 
-colors = ['magenta', 'slategray', 'blue']
+colors = ['magenta', 'slategray', 'blue', 'green']
 
 font_dict = dict(color="black",
                  family="Courier New, monospace",
