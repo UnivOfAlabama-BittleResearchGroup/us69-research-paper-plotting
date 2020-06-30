@@ -6,4 +6,6 @@ venv
 data/
 .idea/
 
-*.ipynb_*
+*.ipynb*
+offset
+.virtual_documents/

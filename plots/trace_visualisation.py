@@ -190,9 +190,9 @@ def trace_visual(vehicle_id):
     return fig
 
 
-def trace_no_map(vehicle_id, plot_columns, axis_names):
+def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
 
-    OFFSET = 0.075
+    OFFSET = offset
     POSITION_START = 1 - len(plot_columns) * OFFSET
     TICK_NUM = 5
 
