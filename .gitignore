@@ -6,6 +6,7 @@ venv
 data/
 .idea/
 
+*.ipynb_checkpoints*
 *.ipynb_*
 offset
 .virtual_documents/

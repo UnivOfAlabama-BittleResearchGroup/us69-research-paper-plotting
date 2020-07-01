@@ -6,6 +6,7 @@ from index import APP_PATH
 import numpy as np
 import math
 import plotly_template as pt
+from plotly.subplots import make_subplots
 
 data_dir = os.path.join(APP_PATH, 'data', 'sample_analysis')
 
@@ -72,25 +73,43 @@ def plot_pdf(sample_percent1, sample_percent2, plot_var, plot_var2):
     return fig
 
 
-def simple_pdf(pd_series, labels=None, xaxis_label=None):
+def simple_pdf(pd_series, labels=None, xaxis_label=None, histnorm=True, bin_count=50, opacity=0.75):
 
     if not isinstance(pd_series, list):
         plot_vals = [list(pd_series.values)]
-        bin_size = round((max(plot_vals[0]) - min(plot_vals[0])) / 50, 3)
+        bin_size = round((max(plot_vals[0]) - min(plot_vals[0])) / bin_count, 3)
     else:
         plot_vals = [list(vals) for vals in pd_series]
-        bin_size = round((max(plot_vals[0]) - min(plot_vals[0])) / 50, 3)
+        bin_size = round((max(plot_vals[0]) - min(plot_vals[0])) / bin_count, 3)
 
     if not (isinstance(labels, list)):
         labels = [labels]
 
-    fig = ff.create_distplot(plot_vals, labels, bin_size=bin_size,
-                             curve_type='normal',
-                             histnorm='probability density',  # override default 'kde'
-                             colors=pt.pdf_colors[:len(labels)])
+    if histnorm:
+        fig = ff.create_distplot(plot_vals, labels, bin_size=bin_size,
+                                 curve_type='normal',
+                                 histnorm='probability density',  # override default 'kde'
+                                 colors=pt.pdf_colors[:len(labels)])
 
-    fig.update_layout(yaxis=dict(title="Probability Density", exponentformat='E'),
-                      xaxis=dict(title=xaxis_label),
-                      template=pt.template)
+        fig.update_layout(yaxis=dict(title="Probability Density", exponentformat='E'),
+                          xaxis=dict(title=xaxis_label),
+                          template=pt.template)
+
+    else:
+        fig = make_subplots()
+        for i, series in enumerate(plot_vals):
+            fig.add_trace(go.Histogram(
+                x=series,
+                name=labels[i],
+                opacity=opacity,
+                marker_color=pt.pdf_colors[i],
+                xbins=dict(size=bin_size)
+                )
+            )
+
+        fig.update_layout(yaxis=dict(title="Count"),
+                          xaxis=dict(title=xaxis_label),
+                          template=pt.template,
+                          barmode='overlay')
 
     return fig

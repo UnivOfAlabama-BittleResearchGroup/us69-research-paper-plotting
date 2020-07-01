@@ -244,4 +244,10 @@ pdf_fig.show()
 
 # %%
 
+plot_column = ('vehicle_fuel', 'mpg')
+time_interval = '15T'
+
 # px.histogram(df, x="total_bill", histnorm='probability density')
+interval_distribution_new = get_time_based_emissions_distribution(emissions_df=raw_data_df, summary_df=summary_df,
+                                                                    interval=time_interval, bin_column=plot_column,
+                                                                    return_data=True)
