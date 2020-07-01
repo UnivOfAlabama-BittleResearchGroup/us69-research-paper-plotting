@@ -38,8 +38,8 @@ def bin_2D_sum(emissions_df, bin_column, resample_period, bin_size, start_time=N
     time_range = pd.date_range(start=start_time, end=end_time, freq=resample_period)
 
     # create the memmap object
-    master_A_sum = np.memmap(definitions.MMAPPED_PATH, mode='w+', dtype=np.float32,
-                             shape=(len(time_range), len(y_bins) - 1, len(x_bins) - 1))
+    # master_A_sum = np.memmap(definitions.MMAPPED_PATH, mode='w+', dtype=np.float32,
+    #                          shape=(len(time_range), len(y_bins) - 1, len(x_bins) - 1))
 
     time_range = np.array_split(time_range, processor_num)
 

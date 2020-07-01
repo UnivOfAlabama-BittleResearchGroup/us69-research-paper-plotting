@@ -201,7 +201,6 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
     mask = sampled_emissions_df['vehicle_id'] == vehicle_id
     local_df = sampled_emissions_df[mask]
 
-
     fig.add_trace(
         go.Scatter(x=local_df['timestep_time'],
                    y=local_df['vehicle_speed'],
