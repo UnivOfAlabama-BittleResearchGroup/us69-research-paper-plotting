@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly_template as pt
 import math
+from functions import yaxis_aligner
 
 mapbox_key = "pk.eyJ1IjoibWF4LXNjaHJhZGVyIiwiYSI6ImNrOHQxZ2s3bDAwdXQzbG81NjZpZm96bDEifQ.etUi4OK4ozzaP_P8foZn_A"
 
@@ -291,50 +292,51 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
 
 
 def plot_pairs(plot_data, names, offset):
-    OFFSET = offset
-    POSITION_START = 1 - (len(plot_data)-1) * OFFSET
-    TICK_NUM = 5
 
     fig = go.Figure()
 
-    axis_class_list = []
-    max_tick_ratio = 0
-    for i, data in enumerate(plot_data):
-        tick_calculation = CalculateTicks(data['y'], TICK_NUM)
-        axis_class_list.append(tick_calculation)
-        max_tick_ratio = tick_calculation.y_dtick_ratio if tick_calculation.y_dtick_ratio > max_tick_ratio \
-            else max_tick_ratio
+    yaxis_dict, right_y_position = yaxis_aligner.get_y_axis_dict([data['y'] for data in plot_data], axis_names=names,
+                                                                 offset=offset, axis_colors=pt.colors,
+                                                                 tick_num=5)
 
-    any_negative = False
-    for i, tick_calculation in enumerate(axis_class_list):
-        if tick_calculation.y_min < 0:
-            any_negative = True
-            axis_class_list[i].negative = True
-            axis_class_list[i].y_negative_ratio = abs(
-                tick_calculation.y_min / tick_calculation.y_range) * max_tick_ratio
-        else:
-            axis_class_list[i].y_negative_ratio = 0
-        axis_class_list[i].y_positive_ratio = (tick_calculation.y_max / tick_calculation.y_range) * max_tick_ratio
-
-    global_negative_ratio = 0
-    global_positive_ratio = 0
-    for i, tick_calculation in enumerate(axis_class_list):
-        global_negative_ratio = tick_calculation.y_negative_ratio if tick_calculation.y_negative_ratio \
-                                                                     > global_negative_ratio else global_negative_ratio
-        global_positive_ratio = tick_calculation.y_positive_ratio if tick_calculation.y_positive_ratio \
-                                                                     > global_positive_ratio else global_positive_ratio
-
-    global_negative_ratio = global_negative_ratio + 0.1
-    for i, tick_calculation in enumerate(axis_class_list):
-        if any_negative:
-            axis_class_list[i].y_range_min = global_negative_ratio * tick_calculation.y_dtick * -1
-        else:
-            axis_class_list[i].y_range_min = 0
-        axis_class_list[i].y_range_max = global_positive_ratio * tick_calculation.y_dtick
+    # axis_class_list = []
+    # max_tick_ratio = 0
+    # for i, data in enumerate(plot_data):
+    #     tick_calculation = CalculateTicks(data['y'], TICK_NUM)
+    #     axis_class_list.append(tick_calculation)
+    #     max_tick_ratio = tick_calculation.y_dtick_ratio if tick_calculation.y_dtick_ratio > max_tick_ratio \
+    #         else max_tick_ratio
+    #
+    # any_negative = False
+    # for i, tick_calculation in enumerate(axis_class_list):
+    #     if tick_calculation.y_min < 0:
+    #         any_negative = True
+    #         axis_class_list[i].negative = True
+    #         axis_class_list[i].y_negative_ratio = abs(
+    #             tick_calculation.y_min / tick_calculation.y_range) * max_tick_ratio
+    #     else:
+    #         axis_class_list[i].y_negative_ratio = 0
+    #     axis_class_list[i].y_positive_ratio = (tick_calculation.y_max / tick_calculation.y_range) * max_tick_ratio
+    #
+    # global_negative_ratio = 0
+    # global_positive_ratio = 0
+    # for i, tick_calculation in enumerate(axis_class_list):
+    #     global_negative_ratio = tick_calculation.y_negative_ratio if tick_calculation.y_negative_ratio \
+    #                                                                  > global_negative_ratio else global_negative_ratio
+    #     global_positive_ratio = tick_calculation.y_positive_ratio if tick_calculation.y_positive_ratio \
+    #                                                                  > global_positive_ratio else global_positive_ratio
+    #
+    # global_negative_ratio = global_negative_ratio + 0.1
+    # for i, tick_calculation in enumerate(axis_class_list):
+    #     if any_negative:
+    #         axis_class_list[i].y_range_min = global_negative_ratio * tick_calculation.y_dtick * -1
+    #     else:
+    #         axis_class_list[i].y_range_min = 0
+    #     axis_class_list[i].y_range_max = global_positive_ratio * tick_calculation.y_dtick
 
     for i, data in enumerate(plot_data):
         if i < 1:
-
+            # Data plotted on the left (main) axis
             fig.add_trace(
                 go.Scatter(x=data['x'],
                            y=data['y'],
@@ -343,21 +345,22 @@ def plot_pairs(plot_data, names, offset):
                            line=dict(color=pt.colors[i])),
             )
 
-            yaxis_dict = dict(yaxis=dict(
-                title=names[i],
-                range=[axis_class_list[i].y_range_min, axis_class_list[i].y_range_max],
-                dtick=axis_class_list[i].y_dtick,
-                titlefont=dict(
-                    color=pt.colors[i]
-                ),
-                tickfont=dict(
-                    color=pt.colors[i]
-                )
-            )
-            )
+            # yaxis_dict = dict(yaxis=dict(
+            #     title=names[i],
+            #     range=[axis_class_list[i].y_range_min, axis_class_list[i].y_range_max],
+            #     dtick=axis_class_list[i].y_dtick,
+            #     titlefont=dict(
+            #         color=pt.colors[i]
+            #     ),
+            #     tickfont=dict(
+            #         color=pt.colors[i]
+            #     )
+            # )
+            # )
         else:
+            # Data plottes on the right handed axis
             y_axis_short = 'y' + str(i + 2)
-            y_axis_long = 'yaxis' + str(i + 2)
+            # y_axis_long = 'yaxis' + str(i + 2)
 
             fig.add_trace(
                 go.Scatter(x=data['x'],
@@ -369,24 +372,24 @@ def plot_pairs(plot_data, names, offset):
                            )
             )
 
-            yaxis_dict[y_axis_long] = dict(title=names[i],
-                                           range=[axis_class_list[i].y_range_min,
-                                                  axis_class_list[i].y_range_max],
-                                           dtick=axis_class_list[i].y_dtick,
-                                           titlefont=dict(
-                                               color=pt.colors[i]
-                                           ),
-                                           tickfont=dict(
-                                               color=pt.colors[i]
-                                           ),
-                                           anchor="free" if i > 1 else 'x',
-                                           overlaying="y",
-                                           side="right",
-                                           position=POSITION_START + OFFSET * (i-1))
+            # yaxis_dict[y_axis_long] = dict(title=names[i],
+            #                                range=[axis_class_list[i].y_range_min,
+            #                                       axis_class_list[i].y_range_max],
+            #                                dtick=axis_class_list[i].y_dtick,
+            #                                titlefont=dict(
+            #                                    color=pt.colors[i]
+            #                                ),
+            #                                tickfont=dict(
+            #                                    color=pt.colors[i]
+            #                                ),
+            #                                anchor="free" if i > 1 else 'x',
+            #                                overlaying="y",
+            #                                side="right",
+            #                                position=POSITION_START + OFFSET * (i - 1))
 
     fig.update_layout(yaxis_dict)
 
-    fig.update_layout(xaxis=dict(domain=[0, POSITION_START]),
+    fig.update_layout(xaxis=dict(domain=[0, right_y_position]),
                       template=pt.template,
                       showlegend=False,
                       )

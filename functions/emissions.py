@@ -30,6 +30,7 @@ def convert_bins_2_lat_lon(bin_size):
 @timing
 def bin_2D_sum(emissions_df, bin_column, resample_period, bin_size, start_time=None, end_time=None,
                processor_num=mp_funcs.CPU_COUNT):
+
     x_bins, y_bins = get_net_bins(bin_size)
 
     # setup the time range

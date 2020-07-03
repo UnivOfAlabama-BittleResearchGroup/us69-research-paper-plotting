@@ -5,9 +5,9 @@ from functools import wraps
 
 strptime = datetime.datetime.strptime
 timedelta = datetime.timedelta
-start_time = definitions.START_TIME
+# start_time = definitions.START_TIME
 
-def func(x):
+def func(x, start_time=None):
     return strptime(start_time, '%m/%d/%Y %H:%M:%S.%f') + timedelta(seconds=x)
 
 def timing(f):
