@@ -120,7 +120,7 @@ def get_y_axis_dict(y_data, axis_names, tick_num, axis_colors, offset):
 # template = 'ggplot'
 #
 # fig = go.Figure()
-# 
+#
 # yaxis_dict, right_y_position = get_y_axis_dict([data['y'] for data in plot_data], axis_names=names,
 #                                                offset=offset, axis_colors=colors, tick_num=tick_num)
 #
