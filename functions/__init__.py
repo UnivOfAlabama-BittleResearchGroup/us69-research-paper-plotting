@@ -10,6 +10,9 @@ timedelta = datetime.timedelta
 def func(x, start_time=None):
     return strptime(start_time, '%m/%d/%Y %H:%M:%S.%f') + timedelta(seconds=x)
 
+def func_no_date(x, start_time=None):
+    return strptime(start_time, '%H:%M:%S.%f') + timedelta(seconds=x)
+
 def timing(f):
     @wraps(f)
     def wrap(*args, **kw):

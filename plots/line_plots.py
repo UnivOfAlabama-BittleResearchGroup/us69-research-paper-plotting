@@ -37,3 +37,22 @@ def line_plot(time_column, plot_columns, time_range):
     fig.update_layout(template=pt.template)
 
     return fig
+
+def line_plots(data_dict):
+
+    fig = go.Figure()
+
+    for i, data in enumerate(data_dict):
+
+        fig.add_trace(go.Scatter(
+            x=data['x'],
+            y=data['y'],
+            name=data['name'],
+            mode='lines+markers',
+            marker_color=pt.colors[i]
+
+        ))
+
+    fig.update_layout(template=pt.template)
+
+    return fig
