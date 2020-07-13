@@ -25,10 +25,11 @@ class CalculateTicks:
         self.y_dtick_ratio = self.y_range / self.y_dtick
 
 
-def get_y_axis_dict(y_data, axis_names, tick_num, axis_colors, offset):
+def get_y_axis_dict(y_data, axis_names, tick_num, axis_colors, offset, offset_start=1):
 
     """
 
+    :param offset_start: The starting point for the plot. Use when there are multiple subplots
     :param offset: the amount in ratio of figure size that the y axes should be offset
     :param axis_colors: a list of plotly colors
     :param tick_num: the number of ticks in the plot
@@ -37,7 +38,7 @@ def get_y_axis_dict(y_data, axis_names, tick_num, axis_colors, offset):
     :return:
     """
 
-    right_y_position = 1 - (len(y_data) - 1) * offset
+    right_y_position = offset_start - (len(y_data) - 1) * offset
 
     axis_class_list = []
     max_tick_ratio = 0

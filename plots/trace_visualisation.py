@@ -9,6 +9,185 @@ mapbox_key = "pk.eyJ1IjoibWF4LXNjaHJhZGVyIiwiYSI6ImNrOHQxZ2s3bDAwdXQzbG81NjZpZm9
 sampled_emissions_df = None
 
 
+def trace_visual_multiaxis(vehicle_id, column_names, axis_names, offset):
+    font_dict = pt.font_dict
+
+    animation_step_duration = 500  # ms
+    animation_step_size = 4  # animate two simulation steps in every animation
+
+    local_df = sampled_emissions_df.loc[sampled_emissions_df['vehicle_id'] == vehicle_id]
+
+    fig = make_subplots(rows=1, cols=2,
+                        specs=[[{'secondary_y': True}, {'type': 'mapbox', }]],
+                        # subplot_titles=('Subplot (1,1)', 'Subplot(1,2)'),
+                        column_widths=[0.7, 0.3],
+                        horizontal_spacing=0.1, )
+
+#     fig = go.Figure()
+
+    fig.update_layout(xaxis=dict(domain=[0, 0.7], anchor='y', title_text="Simulation Time [s]",
+                                 range=[local_df['timestep_time'].iloc[0], local_df['timestep_time'].iloc[-1]],
+                                )
+                      ,
+                      xaxis2=dict(domain=[0.7, 1], ),)
+
+    y_data = [local_df[column] for column in column_names]
+    yaxis_dict, right_y_position = yaxis_aligner.get_y_axis_dict(y_data, axis_names=axis_names,
+                                                                 offset=offset, axis_colors=pt.colors,
+                                                                 tick_num=5, offset_start=0.7)
+    # for key in yaxis_dict.keys():
+    #     yaxis_dict[key]['secondary_y'] = True
+
+    for i, data in enumerate(y_data):
+        if i < 1:
+            # Data plotted on the left (main) axis
+            fig.add_trace(
+                go.Scatter(x=local_df['timestep_time'],
+                           y=data,
+                           name=axis_names[i],
+                           mode='lines',
+                           xaxis='x',
+                           line=dict(color=pt.colors[i])),
+                row=1,
+                col=1,
+            )
+
+        else:
+            # Data plottes on the right handed axis
+            y_axis_short = 'y' + str(i + 2)
+            # y_axis_long = 'yaxis' + str(i + 2)
+
+            fig.add_trace(
+                go.Scatter(x=local_df['timestep_time'],
+                           y=data,
+                           name=axis_names[i],
+                           mode='lines',
+                           line=dict(color=pt.colors[i]),
+                           xaxis='x',
+                           yaxis=y_axis_short,
+                           ),
+                secondary_y=True,
+                row=1,
+                col=1,
+            )
+
+    fig.add_trace(go.Scattermapbox(
+        lon=local_df['vehicle_x_geo'],
+        lat=local_df['vehicle_y_geo'],
+        mode='markers+lines',
+        line={
+            'color': 'blue',
+            'width': 4,
+        }
+    ),
+        row=1,
+        col=2
+    )
+
+    frames = [dict(
+        name=k,
+        data=[go.Scatter(x=local_df['timestep_time'].iloc[:k],
+                         y=local_df[column].iloc[:k],
+                         mode='markers+lines') for column in column_names] +
+             [
+                 go.Scattermapbox(
+                     lat=local_df['vehicle_y_geo'].iloc[:k],
+                     lon=local_df['vehicle_x_geo'].iloc[:k],
+                     mode='lines',
+                     line={
+                         'color': 'blue',
+                         'width': 4,
+                     }
+                 ),
+             ],
+        traces=[i for i in range(0, len(column_names))] + [len(column_names)],
+        # the elements of the list [0,1,2] give info on the traces in fig.data
+        # that are updated by the above three go.Scatter instances
+    ) for k in range(0, len(local_df['vehicle_x_geo']), animation_step_size)]
+
+    updatemenus = [
+        {
+            "buttons": [
+                {
+                    "args": [[f'{k}' for k in range(0, len(local_df['vehicle_x_geo']), animation_step_size)],
+                             {"frame": {"duration": animation_step_duration, "redraw": True},
+                              "fromcurrent": True,
+                              "transition": {"duration": animation_step_duration}
+                              }
+                             ],
+                    "label": "&#9654;",  # play symbol
+                    "method": "animate",
+                },
+                {
+                    "args": [[None], {"frame": {"duration": 0, "redraw": False},
+                                      "mode": "immediate",
+                                      "transition": {"duration": 0}}],
+                    "label": "&#9724;",  # pause symbol
+                    "method": "animate",
+                },
+            ],
+            "direction": "left",
+            # "pad": {"r": 10, "t": 30},
+            "type": "buttons",
+            "x": 0.1,
+            "y": 0,
+            'showactive': True,
+        }
+    ]
+
+    sliders = [
+        {
+            "currentvalue": {
+                "font": font_dict,
+                "prefix": "Time: ",
+                "visible": True,
+                "xanchor": "right"
+            },
+            "pad": {"b": 20, "t": 40},
+            "len": 0.9,
+            # "x": 0.1,
+            # "y": 0,
+            "visible": True,
+            "steps": [
+                {
+                    "args": [[f['name']], {"frame": {"duration": animation_step_duration, "redraw": True},
+                                           "mode": "immediate",
+                                           "transition": {"duration": animation_step_duration}}
+                             ],
+                    "label": str(local_df['timestep_time'].iloc[int(f['name'])]),
+                    "method": "animate",
+                }
+                for f in frames
+            ],
+        }
+    ]
+
+    fig.update(frames=frames),
+    fig.update_layout(updatemenus=updatemenus,
+                      sliders=sliders,
+                      mapbox=dict(
+                          accesstoken=mapbox_key,
+                          bearing=0,
+                          style='mapbox://styles/max-schrader/ck8t1cmmc02wk1it9rv28iyte',
+                          center=go.layout.mapbox.Center(
+                              lat=33.12627,
+                              lon=-87.54891
+                          ),
+                          pitch=0,
+                          zoom=14.1,
+                      ),
+                      template=pt.template
+                      )
+
+    fig.update_layout(yaxis_dict)
+
+    fig.update_layout(xaxis=dict(domain=[0, right_y_position]),
+                      showlegend=True,
+                      # margin=dict(l=20, r=20, t=20, b=20),
+                      )
+    return fig
+
+
 def trace_visual(vehicle_id):
     font_dict = pt.font_dict
 
@@ -292,7 +471,6 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
 
 
 def plot_pairs(plot_data, names, offset):
-
     fig = go.Figure()
 
     yaxis_dict, right_y_position = yaxis_aligner.get_y_axis_dict([data['y'] for data in plot_data], axis_names=names,
