@@ -27,3 +27,4 @@ pyproj
 psutil
 pandas
 vaex
+openpyxl
