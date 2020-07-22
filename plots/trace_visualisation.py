@@ -383,7 +383,8 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
         go.Scatter(x=local_df['timestep_time'],
                    y=local_df['vehicle_speed'],
                    name='Speed',
-                   mode='lines'),
+                   mode='lines',
+                   line=dict(color=pt.colors[0])),
     )
 
     axis_class_list = []
@@ -425,12 +426,12 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
         title=axis_names[0],
         range=[axis_class_list[0].y_range_min, axis_class_list[0].y_range_max],
         dtick=axis_class_list[0].y_dtick,
-        # titlefont=dict(
-        #     color=pt.colors[0]
-        # ),
-        # tickfont=dict(
-        #     color=pt.colors[0]
-        # )
+        titlefont=dict(
+            color=pt.colors[0]
+        ),
+        tickfont=dict(
+            color=pt.colors[0]
+        )
     )
     )
 
@@ -440,7 +441,7 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
                        y=local_df[column],
                        name=column,
                        mode='lines',
-                       line=dict(color=pt.colors[i]),
+                       line=dict(color=pt.colors[i+1]),
                        yaxis='y' + str(i + 2)),
         )
 
@@ -449,10 +450,10 @@ def trace_no_map(vehicle_id, plot_columns, axis_names, offset):
                                                        axis_class_list[i + 1].y_range_max],
                                                 dtick=axis_class_list[i + 1].y_dtick,
                                                 titlefont=dict(
-                                                    color=pt.colors[i]
+                                                    color=pt.colors[i+1]
                                                 ),
                                                 tickfont=dict(
-                                                    color=pt.colors[i]
+                                                    color=pt.colors[i+1]
                                                 ),
                                                 anchor="free" if i > 0 else 'x',
                                                 overlaying="y",
