@@ -63,6 +63,8 @@ def bin_2D_sum(emissions_df, bin_column, resample_period, bin_size, start_time=N
             inner_item = inner_item[inner_item != 0].flatten()
             output_dict[time_range[i][j]]["data"] = inner_item
             output_dict[time_range[i][j]]["max_value"] = item[1][1]
+            output_dict[time_range[i][j]]["interval_sum"] = item[1][2][j]
+
     del master_A_sum
     gc.collect()
 
@@ -75,7 +77,7 @@ def _2d_bin(time_range, df, bin_column, x_bins, y_bins):
     result_dict = []
     max = 0
     bin_column = bin_column[0]
-
+    inner_sum = []
     for i, time in enumerate(time_range[:-1]):
         mask = (df['timestep_time'] >= time) & (df['timestep_time'] < time_range[i + 1])
         local_df = df[mask]
@@ -88,8 +90,9 @@ def _2d_bin(time_range, df, bin_column, x_bins, y_bins):
         local_max = np.amax(A, axis=(0, 1))
         if local_max > max:
             max = local_max
+        inner_sum.append(np.sum(A))
 
-    return result_dict, max
+    return result_dict, max, inner_sum
 
 
 def get_time_based_emissions_distribution(emissions_df, summary_df, bin_column,
@@ -177,12 +180,13 @@ def _set_average_mpg(time_range, df, summary_df, ):
 
 if __name__ == '__main__':
 
-    heatmap_desired = False
+    heatmap_desired = True
     emission_distribution_desired = False
-    emissions_average_desired = True
+    emissions_average_desired = False
 
-    DATA_FOLDER = '2020-06-24_09_03_03-Full-Analysis'
-    DATA_DIR_FULL_PATH = os.path.join(definitions.DATA_DIR, DATA_FOLDER)
+    DATA_FOLDER = '2020-02-13'
+    DATA_DIR = r'Z:\6 ACTION Project\SUMO\Sim_Output_Data\7-14-2020'
+    DATA_DIR_FULL_PATH = os.path.join(DATA_DIR, DATA_FOLDER)
     RAW_DATA_FILE = 'data.csv'
     SUMMARY_DATA_FILE = 'data_summary.csv'
 
@@ -192,9 +196,11 @@ if __name__ == '__main__':
     summary_df = pd.read_csv(os.path.join(DATA_DIR_FULL_PATH, SUMMARY_DATA_FILE), header=[0, 1], index_col=0)
     df = pd.read_csv(os.path.join(DATA_DIR_FULL_PATH, RAW_DATA_FILE), low_memory=False, index_col=0)
     df['timestep_time'] = pd.to_datetime(df['timestep_time'])
+    df.loc[:, 'vehicle_fuel'] = df.loc[:, 'vehicle_fuel'] / 3600
+
     if heatmap_desired:
         # Increase the processor number the smaller the resample period is
-        bin_2D_sum(emissions_df=df, bin_column=['vehicle_fuel'], resample_period='5T', bin_size=5, )
+        bin_2D_sum(emissions_df=df, bin_column=['vehicle_fuel'], resample_period='120T', bin_size=5, processor_num=1)
 
     if emission_distribution_desired:
         get_time_based_emissions_distribution(emissions_df=df, summary_df=summary_df, interval=time_interval,
@@ -203,4 +209,6 @@ if __name__ == '__main__':
     if emissions_average_desired:
         data, _ = get_time_based_emissions_points(emissions_df=df, summary_df=summary_df, interval='15T',
                                                processor_num=4, return_data=True, method='mpg')
-        data
+        # data
+
+    binned_emissions_dict = pickle.load(open(os.path.join(definitions.DATA_DIR, 'emissions_dict.pkl'), 'rb'))
