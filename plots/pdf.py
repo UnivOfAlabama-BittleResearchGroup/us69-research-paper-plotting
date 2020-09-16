@@ -88,8 +88,11 @@ def simple_pdf(pd_series, labels=None, xaxis_label=None, histnorm=True, bin_coun
     if histnorm:
         fig = ff.create_distplot(plot_vals, labels, bin_size=bin_size,
                                  curve_type='normal',
-                                 histnorm='probability density',  # override default 'kde'
-                                 colors=pt.pdf_colors[:len(labels)])
+                                 # histnorm='probability density',  # override default 'kde'
+                                 histnorm=None,
+				 show_rug=False,
+				 show_hist=False, 
+				 colors=pt.pdf_colors[:len(labels)])
 
         fig.update_layout(yaxis=dict(title="Probability Density", exponentformat='E'),
                           xaxis=dict(title=xaxis_label),
